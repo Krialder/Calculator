@@ -39,19 +39,16 @@ int isValidCharacter(char ch);
 // Function to evaluate postfix expression
 double evaluatePostfix(char *postfix);
 
-// Function to check if the operator is right associative
-int isRightAssociative(char op);
+// Function to check if the input is binary
+int isBinary(const char *input);
 
-// Function to handle operands in the infix expression
-void handleOperand(char *infix, char *postfix, int *i, int *j);
+// Function to check if the input is decimal
+int isDecimal(const char *input);
 
-// Function to handle operators in the infix expression
-void handleOperator(Stack *s, char *postfix, int *j, char op);
+// Function to check if the input is hexadecimal
+int isHexadecimal(const char *input);
 
-// Function to handle operands in the postfix expression
-void handlePostfixOperand(Stack *s, char *postfix, int *i);
-
-// Function to handle operators in the postfix expression
-void handlePostfixOperator(Stack *s, char op);
+// Function to convert input to decimal
+int convertToDecimal(const char *input);
 
 #endif // STACK_H

@@ -78,3 +78,64 @@ int isValidCharacter(char ch)
 {
     return isdigit(ch) || ch == '.' || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^' || ch == '(' || ch == ')' || ch == 's' || ch == 'l' || ch == 'S' || ch == 'C' || ch == 'T' || ch == ' ';
 }
+
+// Function to check if the input is binary
+int isBinary(const char *input)
+{
+    for (int i = 0; input[i] != '\0'; i++)
+    {
+        if (input[i] != '0' && input[i] != '1')
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// Function to check if the input is decimal
+int isDecimal(const char *input)
+{
+    for (int i = 0; input[i] != '\0'; i++)
+    {
+        if (!isdigit(input[i]))
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// Function to check if the input is hexadecimal
+int isHexadecimal(const char *input)
+{
+    for (int i = 0; input[i] != '\0'; i++)
+    {
+        if (!isxdigit(input[i]))
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// Function to convert input to decimal
+int convertToDecimal(const char *input)
+{
+    if (isBinary(input))
+    {
+        return binaryToDecimal(input);
+    }
+    else if (isDecimal(input))
+    {
+        return atoi(input);
+    }
+    else if (isHexadecimal(input))
+    {
+        return hexadecimalToDecimal(input);
+    }
+    else
+    {
+        fprintf(stderr, "Error: Invalid input format\n");
+        exit(EXIT_FAILURE);
+    }
+}
