@@ -5,17 +5,17 @@
 int main()
 {
     char input[MAX];
-    char conversionType;
+    char inputType, conversionType;
     Stack stack;
     initStack(&stack, MAX);
 
-    // Prompt user to enter an expression (binary, decimal, or hexadecimal)
-    printf("Enter an expression (binary, decimal, or hexadecimal): ");
-    scanf("%s", input);
+    // Prompt user to enter the type of the input number
+    printf("Enter the type of the input number (b for binary, d for decimal, h for hexadecimal): ");
+    scanf(" %c", &inputType);
 
-    // Prompt user to enter the conversion type
-    printf("Enter the conversion type (b for binary, d for decimal, h for hexadecimal): ");
-    scanf(" %c", &conversionType);
+    // Prompt user to enter the input number
+    printf("Enter the input number: ");
+    scanf("%s", input);
 
     // Check for empty input
     if (input[0] == '\0')
@@ -24,9 +24,43 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // Convert input to decimal
-    int decimalValue = convertToDecimal(input);
+    // Convert input to decimal based on the specified type
+    int decimalValue;
+    switch (inputType)
+    {
+        case 'b':
+            if (!isBinary(input))
+            {
+                fprintf(stderr, "Error: Invalid binary input\n");
+                return EXIT_FAILURE;
+            }
+            decimalValue = binaryToDecimal(input);
+            break;
+        case 'd':
+            if (!isDecimal(input))
+            {
+                fprintf(stderr, "Error: Invalid decimal input\n");
+                return EXIT_FAILURE;
+            }
+            decimalValue = atoi(input);
+            break;
+        case 'h':
+            if (!isHexadecimal(input))
+            {
+                fprintf(stderr, "Error: Invalid hexadecimal input\n");
+                return EXIT_FAILURE;
+            }
+            decimalValue = hexadecimalToDecimal(input);
+            break;
+        default:
+            fprintf(stderr, "Error: Invalid input type\n");
+            return EXIT_FAILURE;
+    }
     printf("Decimal value: %d\n", decimalValue);
+
+    // Prompt user to enter the conversion type
+    printf("Enter the conversion type (b for binary, d for decimal, h for hexadecimal): ");
+    scanf(" %c", &conversionType);
 
     // Convert decimal to the specified format
     char result[MAX];
