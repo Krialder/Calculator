@@ -28,7 +28,7 @@ void push(Stack *s, double value);
 
 // Function to pop an element from the stack
 // Removes and returns the top element of the stack
-double pop(Stack *s); // Error: Stack underflow
+double pop(Stack *s); 
 
 // Function to peek the top element of the stack without removing it
 // Returns the top element of the stack
