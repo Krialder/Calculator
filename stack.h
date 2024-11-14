@@ -1,7 +1,6 @@
 #ifndef STACK_H
 #define STACK_H
 
-// Define the stack structure
 typedef struct
 {
     // Pointer to dynamically allocated array to store stack elements
@@ -12,46 +11,48 @@ typedef struct
     int capacity;
 } Stack;
 
-// Function to initialize the stack
-void initStack(Stack *s, int capacity);
+// Function to initialize the stack with a given capacity
+// This function sets up the stack and allocates memory for it
+void initStack(Stack *s, int capacity); 
 
 // Function to check if the stack is empty
+// Returns 1 if the stack is empty, otherwise returns 0
 int isEmpty(Stack *s);
 
 // Function to check if the stack is full
 int isFull(Stack *s);
 
 // Function to push an element into the stack
-void push(Stack *s, double value);
+// Adds a new element to the top of the stack
+void push(Stack *s, double value); 
 
 // Function to pop an element from the stack
-double pop(Stack *s);
+// Removes and returns the top element of the stack
+double pop(Stack *s); // Error: Stack underflow
 
-// Function to peek the top element of the stack
+// Function to peek the top element of the stack without removing it
+// Returns the top element of the stack
 double peek(Stack *s);
 
 // Function to free the allocated memory of the stack
 void freeStack(Stack *s);
 
-// Function to check if a character is valid
+// Function to check if a character is valid for the calculator
 int isValidCharacter(char ch);
 
-// Function to evaluate postfix expression
+// Function to evaluate a postfix expression
 double evaluatePostfix(char *postfix);
 
-// Function to check if the operator is right associative
-int isRightAssociative(char op);
+// Function to check if the input is a binary number
+int isBinary(const char *input);
 
-// Function to handle operands in the infix expression
-void handleOperand(char *infix, char *postfix, int *i, int *j);
+// Function to check if the input is a decimal number
+int isDecimal(const char *input);
 
-// Function to handle operators in the infix expression
-void handleOperator(Stack *s, char *postfix, int *j, char op);
+// Function to check if the input is a hexadecimal number
+int isHexadecimal(const char *input);
 
-// Function to handle operands in the postfix expression
-void handlePostfixOperand(Stack *s, char *postfix, int *i);
-
-// Function to handle operators in the postfix expression
-void handlePostfixOperator(Stack *s, char op);
+// Function to convert input to a decimal number
+int convertToDecimal(const char *input);
 
 #endif // STACK_H
