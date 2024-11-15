@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "stack.h"
 #include "calculator.h"
+
+#define MAX 100
 
 // Get the precedence of the operator
 int precedence(char op)
