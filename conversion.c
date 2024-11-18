@@ -13,7 +13,7 @@ int binaryToDecimal(const char *binary)
     {
         if (binary[length - i - 1] == '1')
         {
-            decimal += pow(2, i); // Add the value of the current bit to the decimal result
+            decimal += 1 << i; // Use bitwise shift for power of 2
         }
     }
     return decimal;
@@ -48,15 +48,15 @@ int hexadecimalToDecimal(const char *hex)
         char digit = hex[length - i - 1];
         if (digit >= '0' && digit <= '9')
         {
-            decimal += (digit - '0') * pow(16, i); // Convert the digit to its decimal value and add it to the result
+            decimal += (digit - '0') * (1 << (4 * i)); // Use bitwise shift for power of 16
         }
         else if (digit >= 'A' && digit <= 'F')
         {
-            decimal += (digit - 'A' + 10) * pow(16, i); 
+            decimal += (digit - 'A' + 10) * (1 << (4 * i)); 
         }
         else if (digit >= 'a' && digit <= 'f')
         {
-            decimal += (digit - 'a' + 10) * pow(16, i); 
+            decimal += (digit - 'a' + 10) * (1 << (4 * i)); 
         }
     }
     return decimal;
@@ -65,6 +65,18 @@ int hexadecimalToDecimal(const char *hex)
 // Function to convert a decimal number to a hexadecimal string
 void decimalToHexadecimal(int decimal, char *hex)
 {
+    if (decimal == 0)
+    {
+        hex[0] = '0';
+        hex[1] = '\0';
+        return;
+    }
+
+    if (decimal < 0)
+    {
+        decimal = -decimal;
+    }
+
     int index = 0;
     while (decimal > 0)
     {
@@ -86,5 +98,34 @@ void decimalToHexadecimal(int decimal, char *hex)
         char temp = hex[i];
         hex[i] = hex[index - i - 1];
         hex[index - i - 1] = temp;
+    }
+}
+
+// Function to convert a decimal number to a negative binary string
+void decimalToNegativeBinary(int decimal, char *binary);
+
+void decimalToNegativeBinary(int decimal, char *binary)
+{
+    if (decimal < 0)
+    {
+        binary[0] = '-';
+        decimalToBinary(-decimal, binary + 1);
+    }
+    else
+    {
+        decimalToBinary(decimal, binary);
+    }
+}
+
+void decimalToNegativeHexadecimal(int decimal, char *hex)
+{
+    if (decimal < 0)
+    {
+        hex[0] = '-';
+        decimalToHexadecimal(-decimal, hex + 1);
+    }
+    else
+    {
+        decimalToHexadecimal(decimal, hex);
     }
 }

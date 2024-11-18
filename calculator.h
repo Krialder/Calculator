@@ -2,19 +2,36 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
+#include "stack.h" // Include stack.h for Stack type
+
 // Function to convert infix expression (e.g., "1 + 2") to postfix expression (e.g., "1 2 +")
 void infixToPostfix(char *infix, char *postfix);
 
 // Function to evaluate a postfix expression
-// Takes a postfix expression as input and returns the result
 double evaluatePostfix(char *postfix);
 
 // Function to check if a character is an operator
-// Returns 1 if the character is an operator, otherwise returns 0
 int isOperator(char ch);
 
 // Function to get the precedence of an operator
-// Higher precedence value means higher priority
 int precedence(char op);
+
+// Function to check if the operator is right associative
+int isRightAssociative(char op);
+
+// Function to handle operands in the infix expression
+void handleOperand(char *infix, char *postfix, int *i, int *j);
+
+// Function to handle operators in the infix expression
+void handleOperator(Stack *s, char *postfix, int *j, char op);
+
+// Function to handle operands in the postfix expression
+void handlePostfixOperand(Stack *s, char *postfix, int *i);
+
+// Function to handle operators in the postfix expression
+void handlePostfixOperator(Stack *s, char op);
+
+// Function to evaluate an infix expression
+double evaluateInfix(char *infix);
 
 #endif // CALCULATOR_H

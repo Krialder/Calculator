@@ -13,4 +13,10 @@ int hexadecimalToDecimal(const char *hex);
 // Function to convert a decimal number to a hexadecimal string
 void decimalToHexadecimal(int decimal, char *hex);
 
+// Function to convert a decimal number to a negative binary string
+void decimalToNegativeBinary(int decimal, char *binary);
+
+// Function to convert a decimal number to a negative hexadecimal string
+void decimalToNegativeHexadecimal(int decimal, char *hex);
+
 #endif // CONVERSION_H
