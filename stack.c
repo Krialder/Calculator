@@ -1,294 +1,145 @@
 #include "stack.h"
+#include "common.h" // Include common.h
+#include "declarations.h" // Include declarations.h
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include "conversion.h"
 #include <string.h>
-#include <math.h> // Include math.h for mathematical functions
+#include <math.h>
 
-// Initialize the stack by setting the top index to -1 and allocating memory
-void initStack(Stack *s, int capacity)
-{
-    if (capacity <= 0)
-    {
-        fprintf(stderr, "Error: Invalid stack capacity\n");
-        exit(EXIT_FAILURE);
+#define SUCCESS 0
+
+void initStack(Stack *s, int size) {
+    s->data = (double *)malloc(size * sizeof(double));
+    if (s->data == NULL) {
+        HANDLE_ERROR("Memory allocation failed for stack", 0);
     }
     s->top = -1;
-    s->capacity = capacity;
-    s->items = (double *)malloc(capacity * sizeof(double));
-    if (s->items == NULL)
-    {
-        fprintf(stderr, "Error: Memory allocation failed\n");
-        exit(EXIT_FAILURE);
-    }
+    s->size = size;
 }
 
-// Check if the stack is empty
-int isEmpty(Stack *s)
-{
+void freeStack(Stack *s) {
+    free(s->data);
+    s->data = NULL;
+    s->top = -1;
+    s->size = 0;
+}
+
+int isEmpty(Stack *s) {
     return s->top == -1;
 }
 
-// Check if the stack is full
-int isFull(Stack *s)
-{
-    return s->top == s->capacity - 1;
+int isFull(Stack *s) {
+    return s->top == s->size - 1;
 }
 
-// Push an element onto the stack
-void push(Stack *s, double value)
-{
-    if (isnan(value) || isinf(value))
-    {
-        fprintf(stderr, "Error: Invalid value\n");
-        exit(EXIT_FAILURE);
+int push(Stack *s, double value) {
+    if (isFull(s)) {
+        HANDLE_ERROR("Stack overflow", 0);
+        return STACK_OVERFLOW;
     }
-    if (isFull(s))
-    {
-        s->capacity *= 2;
-        double *newItems = (double *)realloc(s->items, s->capacity * sizeof(double));
-        if (newItems == NULL)
-        {
-            fprintf(stderr, "Error: Memory allocation failed\n");
-            free(s->items); // Free the old memory to prevent memory leak
-            exit(EXIT_FAILURE);
-        }
-        s->items = newItems;
+    s->data[++(s->top)] = value;
+    return 0;
+}
+
+int pop(Stack *s, double *value) {
+    if (isEmpty(s)) {
+        HANDLE_ERROR("Stack underflow", 0);
+        return STACK_UNDERFLOW;
     }
-    s->items[++s->top] = value;
+    *value = s->data[(s->top)--];
+    return 0;
 }
 
-// Pop an element from the stack
-double pop(Stack *s)
-{
-    if (isEmpty(s))
-    {
-        fprintf(stderr, "Error: Stack underflow\n");
-        exit(EXIT_FAILURE);
+double peek(Stack *s) {
+    if (isEmpty(s)) {
+        HANDLE_ERROR("Stack is empty", 0);
+        return NAN;
     }
-    return s->items[s->top--];
+    return s->data[s->top];
 }
 
-double peek(Stack *s)
-{
-    if (isEmpty(s))
-    {
-        fprintf(stderr, "Error: Stack underflow\n");
-        exit(EXIT_FAILURE);
+void pushChar(Stack *s, char value) {
+    if (isFull(s)) {
+        HANDLE_ERROR("Stack overflow", 0);
+        return;
     }
-    return s->items[s->top];
+    s->data[++(s->top)] = value;
 }
 
-// Free the allocated memory of the stack
-void freeStack(Stack *s)
-{
-    if (s->items != NULL)
-    {
-        free(s->items);
-        s->items = NULL;
+int isNegativeDecimal(const char *input) {
+    if (input[0] != '-') {
+        HANDLE_ERROR("Invalid input", 0);
+        return 0;
     }
-    s->top = -1;
-    s->capacity = 0;
+    return isDecimal(input + 1);
 }
 
-// Function to check if a character is valid for the calculator
-int isValidCharacter(char ch)
-{
-    return isdigit(ch) || ch == '.' || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^' || ch == '(' || ch == ')' || ch == 's' || ch == 'l' || ch == 'S' || ch == 'C' || ch == 'T' || ch == ' ' || isxdigit(ch);
-}
-
-// Function to check if the input is a binary number
-int isBinary(const char *input)
-{
-    for (int i = 0; input[i] != '\0'; i++)
-    {
-        if (input[i] != '0' && input[i] != '1')
-        {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-// Function to check if the input is a decimal number
-int isDecimal(const char *input)
-{
-    for (int i = 0; input[i] != '\0'; i++)
-    {
-        if (!isdigit(input[i]))
-        {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-// Function to check if the input is a hexadecimal number
-int isHexadecimal(const char *input)
-{
-    for (int i = 0; input[i] != '\0'; i++)
-    {
-        if (!isxdigit(input[i]))
-        {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-int isNegativeBinary(const char *input)
-{
-    return input[0] == '-' && isBinary(input + 1);
-}
-
-int isNegativeHexadecimal(const char *input)
-{
-    return input[0] == '-' && isHexadecimal(input + 1);
-}
-
-int isNegativeDecimal(const char *input)
-{
-    return input[0] == '-' && isDecimal(input + 1);
-}
-
-int convertNegativeBinaryToDecimal(const char *input)
-{
-    if (!isNegativeBinary(input))
-    {
-        fprintf(stderr, "Error: Invalid negative binary input\n");
-        exit(EXIT_FAILURE);
+int convertNegativeBinaryToDecimal(const char *input) {
+    if (input[0] != '-') {
+        HANDLE_ERROR("Invalid input", 0);
+        return 0;
     }
     return -binaryToDecimal(input + 1);
 }
 
-int convertNegativeHexadecimalToDecimal(const char *input)
-{
-    if (!isNegativeHexadecimal(input))
-    {
-        fprintf(stderr, "Error: Invalid negative hexadecimal input\n");
-        exit(EXIT_FAILURE);
+int convertNegativeHexadecimalToDecimal(const char *input) {
+    if (input[0] != '-') {
+        HANDLE_ERROR("Invalid input", 0);
+        return 0;
     }
     return -hexadecimalToDecimal(input + 1);
 }
 
-int convertNegativeDecimalToDecimal(const char *input)
-{
-    if (!isNegativeDecimal(input))
-    {
-        fprintf(stderr, "Error: Invalid negative decimal input\n");
-        exit(EXIT_FAILURE);
+int convertNegativeDecimalToDecimal(const char *input) {
+    if (input[0] != '-') {
+        HANDLE_ERROR("Invalid negative decimal input", 0);
+        return 0;
     }
     return -atoi(input + 1);
 }
 
-int isOctal(const char *input)
-{
-    for (int i = 0; input[i] != '\0'; i++)
-    {
-        if (input[i] < '0' || input[i] > '7')
-        {
+int isOctal(const char *input) {
+    for (int i = 0; input[i] != '\0'; i++) {
+        if (input[i] < '0' || input[i] > '7') {
+            HANDLE_ERROR("Invalid input", 0);
             return 0;
         }
     }
     return 1;
 }
 
-int isNegativeOctal(const char *input)
-{
-    return input[0] == '-' && isOctal(input + 1);
+int isNegativeOctal(const char *input) {
+    if (input[0] != '-') {
+        HANDLE_ERROR("Invalid input", 0);
+        return 0;
+    }
+    return isOctal(input + 1);
 }
 
-int convertNegativeOctalToDecimal(const char *input)
-{
-    if (!isNegativeOctal(input))
-    {
-        fprintf(stderr, "Error: Invalid negative octal input\n");
-        exit(EXIT_FAILURE);
+int convertNegativeOctalToDecimal(const char *input) {
+    if (input[0] != '-') {
+        HANDLE_ERROR("Invalid negative octal input", 0);
+        return 0;
     }
     return -octalToDecimal(input + 1);
 }
 
-// Function to convert input to a decimal number
-int convertToDecimal(const char *input)
-{
-    if (isNegativeBinary(input))
-    {
-        return convertNegativeBinaryToDecimal(input);
+int octalToDecimal(const char *octal) {
+    if (octal == NULL || *octal == '\0') {
+        HANDLE_ERROR("Invalid input", 0);
+        return 0;
     }
-    else if (isBinary(input))
-    {
-        return binaryToDecimal(input);
-    }
-    else if (isDecimal(input))
-    {
-        return atoi(input);
-    }
-    else if (isNegativeHexadecimal(input))
-    {
-        return convertNegativeHexadecimalToDecimal(input);
-    }
-    else if (isHexadecimal(input))
-    {
-        return hexadecimalToDecimal(input);
-    }
-    else if (isNegativeDecimal(input))
-    {
-        return convertNegativeDecimalToDecimal(input);
-    }
-    else if (isNegativeOctal(input))
-    {
-        return convertNegativeOctalToDecimal(input);
-    }
-    else if (isOctal(input))
-    {
-        return octalToDecimal(input);
-    }
-    else
-    {
-        fprintf(stderr, "Error: Invalid input format\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
-int precedence(char op);
-
-double applyOperation(double a, double b, char op) 
-{
-    switch (op) 
-    {
-        case '+': return a + b;
-        case '-': return a - b;
-        case '*': return a * b;
-        case '/': return a / b;
-        case '^': return pow(a, b);
-        case 's': return sqrt(a);
-        case 'l': return log10(a);
-        case 'S': return sin(a);
-        case 'C': return cos(a);
-        case 'T': return tan(a);
-        default: return 0;
-    }
-}
-
-void handleParentheses(Stack *ops, Stack *values) 
-{
-    while (!isEmpty(ops) && peek(ops) != '(') 
-    {
-        if (isEmpty(values))
-        {
-            fprintf(stderr, "Error: Mismatched parentheses\n");
-            exit(EXIT_FAILURE);
+    int decimal = 0;
+    int length = strlen(octal);
+    for (int i = 0; i < length; i++) {
+        if (octal[length - i - 1] >= '0' && octal[length - i - 1] <= '7') {
+            decimal += (octal[length - i - 1] - '0') * pow(8, i);
+        } else {
+            HANDLE_ERROR("Invalid octal number", 0);
+            return 0;
         }
-        double val2 = pop(values);
-        double val1 = pop(values);
-        char op = (char)pop(ops);
-        push(values, applyOperation(val1, val2, op));
     }
-    if (isEmpty(ops))
-    {
-        fprintf(stderr, "Error: Mismatched parentheses\n");
-        exit(EXIT_FAILURE);
-    }
-    pop(ops); // Remove the '(' from the stack
+    return decimal;
 }

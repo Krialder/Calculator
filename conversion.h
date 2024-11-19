@@ -1,22 +1,18 @@
 #ifndef CONVERSION_H
 #define CONVERSION_H
 
-// Function to convert a binary string to a decimal number
 int binaryToDecimal(const char *binary);
-
-// Function to convert a decimal number to a binary string
 void decimalToBinary(int decimal, char *binary);
-
-// Function to convert a hexadecimal string to a decimal number
 int hexadecimalToDecimal(const char *hex);
-
-// Function to convert a decimal number to a hexadecimal string
 void decimalToHexadecimal(int decimal, char *hex);
-
-// Function to convert a decimal number to a negative binary string
 void decimalToNegativeBinary(int decimal, char *binary);
-
-// Function to convert a decimal number to a negative hexadecimal string
 void decimalToNegativeHexadecimal(int decimal, char *hex);
+int isBinary(const char *value);
+int isNegativeBinary(const char *value);
+int isDecimal(const char *value);
+int isHexadecimal(const char *value);
+int isNegativeHexadecimal(const char *value);
+double convertToDecimal(const char *value);
+void handlePostfixOperand(const char *operand, double *stack, int *top);
 
 #endif // CONVERSION_H

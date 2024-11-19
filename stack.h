@@ -1,21 +1,18 @@
 #ifndef STACK_H
 #define STACK_H
 
-typedef struct 
-{
-    double *items;
+typedef struct {
+    double *data;
     int top;
-    int capacity;
+    int size;
 } Stack;
 
-// Function declarations for stack operations
-void initStack(Stack *s, int capacity);
+void initStack(Stack *s, int size);
+void freeStack(Stack *s);
+int push(Stack *s, double value); // Changed return type to int
+int pop(Stack *s, double *value); // Changed return type to int and added double* parameter
+double peek(Stack *s);
 int isEmpty(Stack *s);
 int isFull(Stack *s);
-void push(Stack *s, double value);
-double pop(Stack *s);
-double peek(Stack *s);
-void freeStack(Stack *s);
 
 #endif // STACK_H
-
