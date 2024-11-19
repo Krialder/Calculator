@@ -6,7 +6,7 @@
 
 // Common utility functions and macros can be declared here
 extern int isValidCharacter(char ch);
-void handleError(const char *message, const char *file, const int line, const int exitProgram);
+void handleError(const char *message, const char *file, const int line, const int exitProgram); // Added forward declaration
 
 #define HANDLE_ERROR(msg, exitProgram) handleError(msg, __FILE__, __LINE__, exitProgram)
 

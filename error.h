@@ -1,6 +1,6 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-void handleError(const char *message);
+// Removed handleError declaration
 
 #endif // ERROR_H
