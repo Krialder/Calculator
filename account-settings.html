@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin_view.css"> <!-- Link to the new CSS file -->
+    <style>
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            overflow: hidden; /* Prevent overflow */
+        }
+        .navbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            background-color: #333;
+            padding: 10px;
+        }
+        .navbar a {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+            text-align: center;
+        }
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        fieldset {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        legend {
+            font-weight: bold;
+        }
+        button[type="submit"] {
+            font-size: 14px; /* Make smaller */
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button[type="submit"]:hover {
+            background-color: var(--primary-hover-color);
+        }
+        #error-message {
+            color: red;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation bar with links to different sections of the dashboard -->
+    <div class="navbar">
+        <a href="/dashboard.html">📊 Dashboard</a>
+        <a href="#my-checkins">🕒 My Check-ins</a>
+        <a href="#my-analytics">📈 My Analytics</a>
+        <a href="#events-attended">📅 Events Attended</a>
+        <a href="#rfid-devices">📟 RFID Devices</a>
+        <a href="/account-settings.html">⚙️ Account Settings</a>
+        <a href="#notifications">🔔 Notifications</a>
+        <a href="#download-data">💾 Download Data</a>
+        <a href="#help-support">❓ Help & Support</a>
+        <a href="/logout.php">🔓 Log Out</a>
+    </div>
+
+    <div class="content">
+        <h2>Account Settings</h2>
+        
+        <!-- Display error message if present -->
+        <div id="error-message"></div>
+        
+        <!-- Form for updating account settings -->
+        <form action="save_settings.php" method="post" id="settings-form" class="form-container">
+            <!-- Fieldset for notification preferences -->
+            <fieldset>
+                <legend>Notification Preferences</legend>
+                
+                <!-- Checkbox for email notifications -->
+                <label>
+                    <input type="checkbox" name="email_notifications" checked>
+                    Email Notifications
+                </label>
+                <br>
+                
+                <!-- Checkbox for SMS notifications -->
+                <label>
+                    <input type="checkbox" name="sms_notifications">
+                    SMS Notifications
+                </label>
+            </fieldset>
+            
+            <!-- Fieldset for theme preferences -->
+            <fieldset>
+                <legend>Theme Preferences</legend>
+                
+                <!-- Checkbox for dark mode toggle -->
+                <label for="theme-toggle">Dark Mode</label>
+                <input type="checkbox" id="theme-toggle" name="theme_toggle">
+            </fieldset>
+            
+            <!-- Button to save settings -->
+            <button type="submit" id="save-settings-button">Save Settings</button>
+        </form>
+        
+        <!-- Placeholder for admin_view.php content -->
+        <div id="admin-view-content">
+            <h2>Admin View</h2> <!-- Add header -->
+        </div>
+    </div>
+
+    <script src="admin_view.js"></script> <!-- Ensure this script is included -->
+    <script>
+        // Load dark mode setting from localStorage
+        const themeToggle = document.getElementById('theme-toggle');
+        if (localStorage.getItem('darkMode') === 'enabled') 
+        {
+            document.body.classList.add('dark-mode');
+            themeToggle.checked = true;
+        }
+
+        // Apply dark mode without saving it
+        themeToggle.addEventListener('change', () => 
+        {
+            if (themeToggle.checked) 
+            {
+                document.body.classList.add('dark-mode');
+            } 
+            else 
+            {
+                document.body.classList.remove('dark-mode');
+            }
+        });
+
+        // Save dark mode setting to localStorage on form submission
+        document.getElementById('settings-form').addEventListener('submit', (event) => 
+        {
+            event.preventDefault();
+            if (themeToggle.checked) 
+            {
+                localStorage.setItem('darkMode', 'enabled');
+            } 
+            else 
+            {
+                localStorage.setItem('darkMode', 'disabled');
+            }
+            alert('Settings saved!');
+        });
+        
+        // Fetch admin_view.php content and insert it into the div
+        fetch('admin_view.php')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('admin-view-content').innerHTML = data;
+                displayErrorMessage();
+            })
+            .catch(error => console.error('Error fetching admin_view.php:', error));
+
+        function toggleGuestFields(userId, nextFreeUserId) {
+            console.log('toggleGuestFields called with userId:', userId, 'and nextFreeUserId:', nextFreeUserId); // Debugging statement
+            var guestFields = document.getElementById('guest-fields-' + userId);
+            var guestIdDisplay = document.getElementById('guest-id-display-' + userId);
+
+            if (guestFields.style.display === 'none' || guestFields.style.display === '') {
+                hideAllGuestFields(); // Hide all other guest fields
+                guestFields.style.display = 'block';
+                guestIdDisplay.textContent = 'Guest ID: ' + userId + ' | User ID: ' + nextFreeUserId;
+            } else {
+                guestFields.style.display = 'none';
+            }
+        }
+
+        function hideAllGuestFields() {
+            console.log('hideAllGuestFields called'); // Debugging statement
+            var guestFields = document.querySelectorAll('.guest-fields');
+            guestFields.forEach(function(field) {
+                field.style.display = 'none';
+            });
+        }
+
+        // Display error message if present in query parameters
+        function displayErrorMessage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorMessage = urlParams.get('error');
+            const userId = urlParams.get('user_id');
+            if (errorMessage && userId) {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.color = 'red';
+                errorDiv.textContent = decodeURIComponent(errorMessage);
+                const guestFields = document.getElementById('guest-fields-' + userId);
+                if (guestFields) {
+                    guestFields.insertBefore(errorDiv, guestFields.firstChild);
+                    guestFields.style.display = 'block';
+                }
+                // Clear the query parameters from the URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        function confirmDeleteGuest(userId) {
+            if (confirm('Are you sure you want to delete this guest?')) {
+                window.location.href = 'delete_guest.php?user_id=' + userId;
+            }
+        }
+
+        function confirmSaveSettings(form) {
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            const message = `
+                Are you sure you want to save the following settings?
+                Name: ${data.name}
+                Email: ${data.email}
+                Phone: ${data.phone}
+                RFID Tag: ${data.rfid_tag}
+                Role: ${data.role}
+            `;
+
+            if (confirm(message)) {
+                form.submit(); // Submit the form after confirmation
+            } else {
+                return false; // Cancel the form submission
+            }
+        }
+
+        function confirmTransferGuest(userId) {
+            if (confirm('Are you sure you want to transfer this guest to the Users table?')) {
+                window.location.href = 'admin_view.php?transfer_guest_id=' + userId;
+            }
+        }
+    </script>
+</body>
+</html>
