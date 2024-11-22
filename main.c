@@ -6,133 +6,122 @@
 #include "calculator.h"
 #include "conversion.h"
 #include "stack.h"
+#include "utils.h"
+#include "config.h"
+#include "complex_operations.h" // Include the new header
 
-#define MAX 100
+void convertOperands(char *input); // Add this declaration
 
 int main()
 {
     char input[MAX];
     char resultTypes[MAX];
+    char postfix[MAX];
+    char result[MAX];
+    char* token;
     Stack stack;
-    initStack(&stack, MAX);
+    if (initStack(&stack, MAX) != 0)
+    {
+        fprintf(stderr, "Failed to initialize stack\n");
+        return EXIT_FAILURE;
+    }
 
-    // Prompt user to enter the numbers with their types and operators
-    printf("Enter the numbers with their types and operators (e.g., b1010 (+) d5 (-) hA): ");
-    fgets(input, MAX, stdin);
+    printf("Enter the numbers with their types and operators (e.g., b1010 (+) d5 (-) hA). Supported operators: +, -, *, /, ^, s (sqrt), l (log), S (sin), C (cos), T (tan), e (exp): ");
+    if (fgets(input, MAX, stdin) == NULL)
+    {
+        fprintf(stderr, "Failed to read input\n");
+        freeStack(&stack);
+        return EXIT_FAILURE;
+    }
     input[strcspn(input, "\n")] = '\0'; // Remove newline character
+
+    printf("Input received: %s\n", input); // Debugging message
+
+    // Convert operands to decimal
+    convertOperands(input);
+
+    // Debugging output: print the converted input
+    printf("Converted input: %s\n", input);
 
     // Prompt user to enter the result types
     printf("Enter the result types (b for binary, d for decimal, h for hexadecimal): ");
-    fgets(resultTypes, MAX, stdin);
-    resultTypes[strcspn(resultTypes, "\n")] = '\0'; 
-
-    // Parse the input numbers and operators, and convert numbers to decimal
-    char *token = strtok(input, " ");
-    int decimalValues[MAX];
-    char operators[MAX];
-    int numCount = 0, opCount = 0;
-    while (token != NULL)
+    if (fgets(resultTypes, MAX, stdin) == NULL)
     {
-        if (isdigit(token[0]) || token[0] == 'b' || token[0] == 'd' || token[0] == 'h')
-        {
-            char type = token[0];
-            char *value = token + 1;
-            switch (type)
-            {
-                case 'b':
-                    if (!isBinary(value))
-                    {
-                        fprintf(stderr, "Error: Invalid binary input\n");
-                        return EXIT_FAILURE;
-                    }
-                    decimalValues[numCount++] = binaryToDecimal(value);
-                    break;
-                case 'd':
-                    if (!isDecimal(value))
-                    {
-                        fprintf(stderr, "Error: Invalid decimal input\n");
-                        return EXIT_FAILURE;
-                    }
-                    decimalValues[numCount++] = atoi(value);
-                    break;
-                case 'h':
-                    if (!isHexadecimal(value))
-                    {
-                        fprintf(stderr, "Error: Invalid hexadecimal input\n");
-                        return EXIT_FAILURE;
-                    }
-                    decimalValues[numCount++] = hexadecimalToDecimal(value);
-                    break;
-                default:
-                    fprintf(stderr, "Error: Invalid input type\n");
-                    return EXIT_FAILURE;
-            }
-        }
-        else if (strchr("+-*/^", token[0]) != NULL)
-        {
-            operators[opCount++] = token[0];
-        }
-        else
-        {
-            fprintf(stderr, "Error: Invalid input format\n");
-            return EXIT_FAILURE;
-        }
-        token = strtok(NULL, " ");
+        fprintf(stderr, "Failed to read result types\n");
+        freeStack(&stack);
+        return EXIT_FAILURE;
+    }
+    resultTypes[strcspn(resultTypes, "\n")] = '\0';
+
+    printf("Result types received: %s\n", resultTypes); // Debugging message
+
+    // Convert infix expression to postfix expression
+    if (infixToPostfix(input, postfix) != 0)
+    {
+        fprintf(stderr, "Failed to convert infix to postfix\n");
+        freeStack(&stack);
+        return EXIT_FAILURE;
     }
 
-    //When doing that "Die ausführung des Codes kann nicht forgesetzt werdej, da libisl-23.dll nicht gefunden wurde"
+    // Debugging output: print the postfix expression
+    printf("Postfix expression: %s\n", postfix);
 
-    // Perform the calculations
-    double resultValue = decimalValues[0];
-    for (int i = 0; i < opCount; i++)
-    {
-        char operator = operators[i];
-        double nextValue = decimalValues[i + 1];
-        switch (operator)
-        {
-            case '+': resultValue += nextValue; break;
-            case '-': resultValue -= nextValue; break;
-            case '*': resultValue *= nextValue; break;
-            case '/':
-                if (nextValue == 0)
-                {
-                    fprintf(stderr, "Error: Division by zero\n");
-                    return EXIT_FAILURE;
-                }
-                resultValue /= nextValue;
-                break;
-            case '^': resultValue = pow(resultValue, nextValue); break;
-            default:
-                fprintf(stderr, "Error: Invalid operator\n");
-                return EXIT_FAILURE;
-        }
-    }
+    // Evaluate the postfix expression
+    Complex resultValue = evaluatePostfix(postfix);
+
+    // Debugging output: print the result value
+    printf("Result value: %.2f + %.2fi\n", resultValue.real, resultValue.imag);
 
     // Convert and print the result in each of the specified formats
-    char result[MAX];
     token = strtok(resultTypes, " ");
     while (token != NULL)
     {
         char type = token[0];
         switch (type)
         {
-            case 'b':
-                decimalToBinary((int)resultValue, result);
-                printf("Result (binary): %s\n", result);
-                break;
-            case 'd':
-                printf("Result (decimal): %d\n", (int)resultValue);
-                break;
-            case 'h':
-                decimalToHexadecimal((int)resultValue, result);
-                printf("Result (hexadecimal): %s\n", result);
-                break;
-            default:
-                fprintf(stderr, "Error: Invalid result type\n");
+        case 'b':
+            if (decimalToBinary((int)resultValue.real, result) != 0)
+            {
+                fprintf(stderr, "Failed to convert decimal to binary\n");
+                freeStack(&stack);
                 return EXIT_FAILURE;
+            }
+            printf("Result (binary): %s\n", result);
+            break;
+        case 'd':
+            printf("Result (decimal): %.2f + %.2fi\n", resultValue.real, resultValue.imag);
+            break;
+        case 'h':
+            if (decimalToHexadecimal((int)resultValue.real, result) != 0)
+            {
+                fprintf(stderr, "Failed to convert decimal to hexadecimal\n");
+                freeStack(&stack);
+                return EXIT_FAILURE;
+            }
+            printf("Result (hexadecimal): %s\n", result);
+            break;
+        default:
+            fprintf(stderr, "Invalid result type\n");
+            freeStack(&stack);
+            return EXIT_FAILURE;
         }
         token = strtok(NULL, " ");
     }
 
+    freeStack(&stack);
     return 0;
+}
+
+void convertOperands(char *input)
+{
+    char *token = strtok(input, " ");
+    while (token != NULL)
+    {
+        int decimal;
+        if (convertToDecimal(token, &decimal) == 0)
+        {
+            sprintf(token, "%d", decimal);
+        }
+        token = strtok(NULL, " ");
+    }
 }
