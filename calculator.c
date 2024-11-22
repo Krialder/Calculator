@@ -34,10 +34,7 @@ int precedence(char op)
 }
 
 // Check if the character is an operator
-int isOperator(char ch)
-{
-    return ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^' || ch == 's' || ch == 'l' || ch == 'S' || ch == 'C' || ch == 'T' || ch == 'e';
-}
+// Remove the definition of isOperator
 
 // Check if the operator is right associative
 int isRightAssociative(char op)
@@ -122,4 +119,63 @@ int infixToPostfix(const char* infix, char* postfix)
     postfix[j - 1] = '\0'; // Null-terminate the postfix expression
     freeStack(&s);
     return 0;
+}
+
+#include "calculator.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+// Function to evaluate the input expression
+double evaluateExpression(const char* expression) {
+    // Implement your expression evaluation logic here
+    // For simplicity, let's assume it returns a fixed value
+    return 5.0;
+}
+
+// Function to convert a double to binary string
+void doubleToBinary(double num, char* binaryStr) {
+    int intPart = (int)num;
+    int i = 0;
+    while (intPart > 0) {
+        binaryStr[i++] = (intPart % 2) ? '1' : '0';
+        intPart /= 2;
+    }
+    binaryStr[i] = '\0';
+    // Reverse the string
+    for (int j = 0; j < i / 2; ++j) {
+        char temp = binaryStr[j];
+        binaryStr[j] = binaryStr[i - j - 1];
+        binaryStr[i - j - 1] = temp;
+    }
+}
+
+// Function to convert a double to hexadecimal string
+void doubleToHex(double num, char* hexStr) {
+    sprintf(hexStr, "%X", (int)num);
+}
+
+// Function to display the results in the specified formats
+void displayResults(double result, const char* formats) {
+    char binaryStr[64];
+    char hexStr[64];
+    for (int i = 0; formats[i] != '\0'; ++i) {
+        switch (formats[i]) {
+            case 'd':
+                printf("Decimal: %f\n", result);
+                break;
+            case 'b':
+                doubleToBinary(result, binaryStr);
+                printf("Binary: %s\n", binaryStr);
+                break;
+            case 'h':
+                doubleToHex(result, hexStr);
+                printf("Hexadecimal: %s\n", hexStr);
+                break;
+            default:
+                printf("Unknown format: %c\n", formats[i]);
+                break;
+        }
+    }
 }

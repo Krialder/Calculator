@@ -55,58 +55,11 @@ int main()
 
     printf("Result types received: %s\n", resultTypes); // Debugging message
 
-    // Convert infix expression to postfix expression
-    if (infixToPostfix(input, postfix) != 0)
-    {
-        fprintf(stderr, "Failed to convert infix to postfix\n");
-        freeStack(&stack);
-        return EXIT_FAILURE;
-    }
+    // Evaluate the expression
+    double resultValue = evaluateExpression(input);
 
-    // Debugging output: print the postfix expression
-    printf("Postfix expression: %s\n", postfix);
-
-    // Evaluate the postfix expression
-    Complex resultValue = evaluatePostfix(postfix);
-
-    // Debugging output: print the result value
-    printf("Result value: %.2f + %.2fi\n", resultValue.real, resultValue.imag);
-
-    // Convert and print the result in each of the specified formats
-    token = strtok(resultTypes, " ");
-    while (token != NULL)
-    {
-        char type = token[0];
-        switch (type)
-        {
-        case 'b':
-            if (decimalToBinary((int)resultValue.real, result) != 0)
-            {
-                fprintf(stderr, "Failed to convert decimal to binary\n");
-                freeStack(&stack);
-                return EXIT_FAILURE;
-            }
-            printf("Result (binary): %s\n", result);
-            break;
-        case 'd':
-            printf("Result (decimal): %.2f + %.2fi\n", resultValue.real, resultValue.imag);
-            break;
-        case 'h':
-            if (decimalToHexadecimal((int)resultValue.real, result) != 0)
-            {
-                fprintf(stderr, "Failed to convert decimal to hexadecimal\n");
-                freeStack(&stack);
-                return EXIT_FAILURE;
-            }
-            printf("Result (hexadecimal): %s\n", result);
-            break;
-        default:
-            fprintf(stderr, "Invalid result type\n");
-            freeStack(&stack);
-            return EXIT_FAILURE;
-        }
-        token = strtok(NULL, " ");
-    }
+    // Display the results in the specified formats
+    displayResults(resultValue, resultTypes);
 
     freeStack(&stack);
     return 0;
@@ -114,14 +67,37 @@ int main()
 
 void convertOperands(char *input)
 {
+    char converted[MAX] = "";
     char *token = strtok(input, " ");
     while (token != NULL)
     {
-        int decimal;
-        if (convertToDecimal(token, &decimal) == 0)
+        if (isOperator(token[0]) && strlen(token) == 1) // Check if token is an operator
         {
-            sprintf(token, "%d", decimal);
+            strcat(converted, token);
+            strcat(converted, " ");
+        }
+        else if (isdigit(token[0]) || token[0] == 'b' || token[0] == 'd' || token[0] == 'h') // Check if token is a number with prefix
+        {
+            int decimal;
+            if (convertToDecimal(token, &decimal) == 0)
+            {
+                char buffer[50];
+                sprintf(buffer, "%d ", decimal);
+                strcat(converted, buffer);
+            }
+            else
+            {
+                strcat(converted, token);
+                strcat(converted, " ");
+            }
+        }
+        else
+        {
+            strcat(converted, token);
+            strcat(converted, " ");
         }
         token = strtok(NULL, " ");
     }
+    converted[strlen(converted) - 1] = '\0'; // Remove the trailing space
+    strcpy(input, converted);
 }

@@ -11,6 +11,12 @@ int isValidCharacter(char ch)
     return isdigit(ch) || ch == '.' || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^' || ch == '(' || ch == ')' || ch == 's' || ch == 'l' || ch == 'S' || ch == 'C' || ch == 'T' || ch == ' ' || ch == 'e';
 }
 
+// Function to check if a character is an operator
+int isOperator(char ch)
+{
+    return ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^' || ch == 's' || ch == 'l' || ch == 'S' || ch == 'C' || ch == 'T' || ch == 'e';
+}
+
 // Function to check if the input is a binary number
 int isBinary(const char *input)
 {
@@ -53,18 +59,22 @@ int isHexadecimal(const char *input)
 // Function to convert input to a decimal number
 int convertToDecimal(const char *input, int *decimal)
 {
-    if (isBinary(input))
+    printf("Converting input: %s\n", input); // Debugging message
+    if (input[0] == 'b') // Binary input
     {
-        return binaryToDecimal(input, decimal); // Convert binary input to decimal
+        printf("Detected binary input\n"); // Debugging message
+        return binaryToDecimal(input + 1, decimal); // Skip the 'b' prefix
     }
-    else if (isDecimal(input))
+    else if (input[0] == 'd') // Decimal input
     {
-        *decimal = atoi(input); // Convert decimal input to integer
+        printf("Detected decimal input\n"); // Debugging message
+        *decimal = atoi(input + 1); // Skip the 'd' prefix
         return 0;
     }
-    else if (isHexadecimal(input))
+    else if (input[0] == 'h') // Hexadecimal input
     {
-        return hexadecimalToDecimal(input, decimal); // Convert hexadecimal input to decimal
+        printf("Detected hexadecimal input\n"); // Debugging message
+        return hexadecimalToDecimal(input + 1, decimal); // Skip the 'h' prefix
     }
     else
     {

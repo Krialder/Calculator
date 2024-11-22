@@ -21,4 +21,7 @@ int convertToDecimal(const char *input, int *decimal);
 int binaryToDecimal(const char *input, int *decimal);
 int hexadecimalToDecimal(const char *input, int *decimal);
 
+// Function to check if a character is an operator
+int isOperator(char ch);
+
 #endif // UTILS_H
