@@ -1,103 +1,162 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <math.h>
 #include "calculator.h"
 #include "conversion.h"
 #include "stack.h"
-#include "utils.h"
-#include "config.h"
-#include "complex_operations.h" // Include the new header
+#include "operator.h"
+#include "operand.h"
+#include "expression_conversion.h"
+#include "error.h"
+#include "print_conversion_steps.h"
 
-void convertOperands(char *input); // Add this declaration
+#define MAX 100 // Define MAX constant
 
 int main()
 {
-    char input[MAX];
+    char infix[MAX];
     char resultTypes[MAX];
     char postfix[MAX];
-    char result[MAX];
-    char* token;
     Stack stack;
-    if (initStack(&stack, MAX) != 0)
-    {
-        fprintf(stderr, "Failed to initialize stack\n");
-        return EXIT_FAILURE;
+    initStack(&stack, MAX);
+
+    while (1) {
+        // Prompt user to enter the full infix expression with types and operators
+        printf("Enter your infix expression using the following syntax:\n");
+        printf("- Use b for binary, d for decimal, h for hexadecimal (e.g., b1010, d5, hA)\n");
+        printf("- Supported operators: +  -  *  /  %%  ^\n");
+        printf("- Use parentheses ( and ) for grouping and precedence\n");
+        printf("- Type 'exit' to quit the program.\n");
+        printf("Example: (h11 + d3) / b10\n");
+        printf("Your expression: ");
+        fgets(infix, MAX, stdin);
+        infix[strcspn(infix, "\n")] = '\0';
+        if (strcmp(infix, "exit") == 0) {
+            printf("Exiting calculator. Goodbye!\n");
+            break;
+        }
+
+        // Prompt user to enter the result types
+        printf("Enter the result types separated by spaces (b for binary, d for decimal, h for hexadecimal): ");
+        fgets(resultTypes, MAX, stdin);
+        resultTypes[strcspn(resultTypes, "\n")] = '\0';
+
+        // Parse the infix expression, convert operands to decimal, and build a new infix string
+        char infixExpression[MAX] = "";
+        char token[MAX];
+        int i = 0, j = 0;
+        while (infix[i] != '\0') {
+            // Skip spaces
+            if (infix[i] == ' ') { i++; continue; }
+            // If operator or parenthesis
+            if (strchr("+-*/^()", infix[i])) {
+                size_t len = strlen(infixExpression);
+                if (len > 0 && infixExpression[len-1] != ' ') {
+                    strcat(infixExpression, " ");
+                }
+                strncat(infixExpression, &infix[i], 1);
+                strcat(infixExpression, " ");
+                i++;
+                continue;
+            }
+            // If operand with type
+            int k = 0;
+            while (infix[i] != '\0' && infix[i] != ' ' && !strchr("+-*/^()", infix[i])) {
+                token[k++] = infix[i++];
+            }
+            token[k] = '\0';
+            if (k > 0) {
+                char type = token[0];
+                char *value = token + 1;
+                double decimal = 0;
+                switch (type) {
+                    case 'b':
+                        decimal = binaryToDecimal(value);
+                        break;
+                    case 'd':
+                        decimal = atof(value);
+                        break;
+                    case 'h':
+                        {
+                            char hexBuffer[34];
+                            snprintf(hexBuffer, sizeof(hexBuffer), "0x%s", value);
+                            decimal = hexadecimalToDecimal(hexBuffer);
+                        }
+                        break;
+                    default:
+                        handleError("Invalid input type");
+                }
+                char buffer[32];
+                if (decimal == (int)decimal) {
+                    snprintf(buffer, sizeof(buffer), "%d", (int)decimal);
+                } else {
+                    snprintf(buffer, sizeof(buffer), "%.2f", decimal);
+                }
+                strcat(infixExpression, buffer);
+                strcat(infixExpression, " ");
+            }
+        }
+
+        // Print the constructed infix expression for debugging
+        printf("Constructed infix expression: %s\n", infixExpression);
+
+        // Convert infix to postfix
+        infixToPostfix(infixExpression, postfix);
+        postfix[strlen(postfix)] = '\0'; // Ensure null-termination
+
+        // Print the postfix expression for debugging
+        printf("Postfix expression: %s\n", postfix);
+
+        // Evaluate the postfix expression and print a summary
+        double resultValue = 0;
+        int error = 0;
+        printf("\n--- Calculation Result ---\n");
+        resultValue = evaluatePostfix(postfix);
+        printf("Final value: %.6f\n", resultValue);
+
+        // Print all requested result types in a summary
+        char result[MAX];
+        char *typeToken = strtok(resultTypes, " ");
+        while (typeToken != NULL)
+        {
+            char type = typeToken[0];
+            switch (type)
+            {
+                case 'b':
+                    if (resultValue < 0)
+                    {
+                        decimalToNegativeBinary((int)resultValue, result);
+                        printConversionSteps((int)resultValue);
+                        printf("Result (binary): -%s\n", result);
+                    }
+                    else
+                    {
+                        decimalToBinary((int)resultValue, result);
+                        printf("Result (binary): %s\n", result);
+                    }
+                    break;
+                case 'd':
+                    printf("Result (decimal): %.2f\n", resultValue);
+                    break;
+                case 'h':
+                    if (resultValue < 0)
+                    {
+                        decimalToNegativeHexadecimal((int)resultValue, result);
+                        printConversionSteps((int)resultValue);
+                    }
+                    else
+                    {
+                        decimalToHexadecimal((int)resultValue, result);
+                    }
+                    printf("Result (hexadecimal): %s\n", result);
+                    break;
+                default:
+                    handleError("Invalid result type");
+            }
+            typeToken = strtok(NULL, " ");
+        }
+        printf("-------------------------\n\n");
     }
-
-    printf("Enter the numbers with their types and operators (e.g., b1010 (+) d5 (-) hA). Supported operators: +, -, *, /, ^, s (sqrt), l (log), S (sin), C (cos), T (tan), e (exp): ");
-    if (fgets(input, MAX, stdin) == NULL)
-    {
-        fprintf(stderr, "Failed to read input\n");
-        freeStack(&stack);
-        return EXIT_FAILURE;
-    }
-    input[strcspn(input, "\n")] = '\0'; // Remove newline character
-
-    printf("Input received: %s\n", input); // Debugging message
-
-    // Convert operands to decimal
-    convertOperands(input);
-
-    // Debugging output: print the converted input
-    printf("Converted input: %s\n", input);
-
-    // Prompt user to enter the result types
-    printf("Enter the result types (b for binary, d for decimal, h for hexadecimal): ");
-    if (fgets(resultTypes, MAX, stdin) == NULL)
-    {
-        fprintf(stderr, "Failed to read result types\n");
-        freeStack(&stack);
-        return EXIT_FAILURE;
-    }
-    resultTypes[strcspn(resultTypes, "\n")] = '\0';
-
-    printf("Result types received: %s\n", resultTypes); // Debugging message
-
-    // Evaluate the expression
-    double resultValue = evaluateExpression(input);
-
-    // Display the results in the specified formats
-    displayResults(resultValue, resultTypes);
-
-    freeStack(&stack);
     return 0;
-}
-
-void convertOperands(char *input)
-{
-    char converted[MAX] = "";
-    char *token = strtok(input, " ");
-    while (token != NULL)
-    {
-        if (isOperator(token[0]) && strlen(token) == 1) // Check if token is an operator
-        {
-            strcat(converted, token);
-            strcat(converted, " ");
-        }
-        else if (isdigit(token[0]) || token[0] == 'b' || token[0] == 'd' || token[0] == 'h') // Check if token is a number with prefix
-        {
-            int decimal;
-            if (convertToDecimal(token, &decimal) == 0)
-            {
-                char buffer[50];
-                sprintf(buffer, "%d ", decimal);
-                strcat(converted, buffer);
-            }
-            else
-            {
-                strcat(converted, token);
-                strcat(converted, " ");
-            }
-        }
-        else
-        {
-            strcat(converted, token);
-            strcat(converted, " ");
-        }
-        token = strtok(NULL, " ");
-    }
-    converted[strlen(converted) - 1] = '\0'; // Remove the trailing space
-    strcpy(input, converted);
 }

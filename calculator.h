@@ -2,43 +2,36 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include "config.h" // Include the configuration header file
-
-typedef struct {
-    double real;
-    double imag;
-} Complex;
+#include "stack.h" // Include stack.h for Stack type
 
 // Function to convert infix expression (e.g., "1 + 2") to postfix expression (e.g., "1 2 +")
-int infixToPostfix(const char* infix, char* postfix);
+void infixToPostfix(char *infix, char *postfix);
+
+// Function to evaluate a postfix expression
+double evaluatePostfix(char *postfix);
+
+// Function to check if a character is an operator
+int isOperator(char ch);
 
 // Function to get the precedence of an operator
-// Higher precedence value means higher priority
 int precedence(char op);
 
-// Declaration of isOperator function
-int isOperator(char op);
-
-typedef struct {
-    Complex* items; // Pointer to dynamically allocated array to store stack elements
-    int top;       // Index of the top element
-    int capacity;  // Current capacity of the stack
-} Stack;
-
+// Function to check if the operator is right associative
 int isRightAssociative(char op);
-void handleOperand(const char* infix, char* postfix, int* i, int* j);
-void handleOperator(Stack* s, char* postfix, int* j, char op);
 
-// Function to evaluate the input expression
-double evaluateExpression(const char* expression);
+// Function to handle operands in the infix expression
+void handleOperand(char *infix, char *postfix, int *i, int *j);
 
-// Function to convert a double to binary string
-void doubleToBinary(double num, char* binaryStr);
+// Function to handle operators in the infix expression
+void handleOperator(Stack *s, char *postfix, int *j, char op);
 
-// Function to convert a double to hexadecimal string
-void doubleToHex(double num, char* hexStr);
+// Function to handle operands in the postfix expression
+void handlePostfixOperand(Stack *s, char *postfix, int *i);
 
-// Function to display the results in the specified formats
-void displayResults(double result, const char* formats);
+// Function to handle operators in the postfix expression
+void handlePostfixOperator(Stack *s, char op);
+
+// Function to evaluate an infix expression
+double evaluateInfix(char *infix);
 
 #endif // CALCULATOR_H
